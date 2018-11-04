@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import division
 
-import tensorflow as tf 
+import tensorflow as tf
 import numpy as np
 import os
 import input_pipeline
@@ -14,10 +14,10 @@ import shutil
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 
-flags.DEFINE_string('checkpoint_dir', './exp/train_02/train', 
+flags.DEFINE_string('checkpoint_dir', './exp/train_04/train',
                     'Directory containing trained checkpoints.')
 flags.DEFINE_string('vis_dir', './exp/train_04/vis', 'Training directory.')
-flags.DEFINE_string('dataset_split', 'train', 
+flags.DEFINE_string('dataset_split', 'train',
                     'Using which dataset split to train the network.')
 flags.DEFINE_integer('batch_size', 1, 'Batch size used for visualization.')
 flags.DEFINE_boolean('is_training', False, 'Is training?')
@@ -26,7 +26,7 @@ flags.DEFINE_boolean('is_training', False, 'Is training?')
 def vis(dataset_split):
     with tf.Graph().as_default() as g:
         with tf.device('/cpu:0'):
-            images, labels = input_pipeline.inputs(FLAGS.dataset_split, FLAGS.is_training, 
+            images, labels = input_pipeline.inputs(FLAGS.dataset_split, FLAGS.is_training,
                                                    FLAGS.batch_size, num_epochs=1)
         predictions = model.inference(images, FLAGS.is_training)
 
@@ -85,7 +85,7 @@ def vis(dataset_split):
 def main(unused_argv):
     if os.path.exists(FLAGS.vis_dir):
         shutil.rmtree(FLAGS.vis_dir)
-    if not os.path.exists(FLAGS.vis_dir): 
+    if not os.path.exists(FLAGS.vis_dir):
         os.makedirs(FLAGS.vis_dir)
     vis(FLAGS.dataset_split)
 
