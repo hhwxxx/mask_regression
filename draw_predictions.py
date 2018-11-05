@@ -14,10 +14,10 @@ import shutil
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 
-flags.DEFINE_string('checkpoint_dir', './exp/train_04/train',
+flags.DEFINE_string('checkpoint_dir', './exp/train_01/train',
                     'Directory containing trained checkpoints.')
-flags.DEFINE_string('vis_dir', './exp/train_04/vis', 'Training directory.')
-flags.DEFINE_string('dataset_split', 'train',
+flags.DEFINE_string('vis_dir', './exp/train_01/vis', 'Training directory.')
+flags.DEFINE_string('dataset_split', 'val',
                     'Using which dataset split to train the network.')
 flags.DEFINE_integer('batch_size', 1, 'Batch size used for visualization.')
 flags.DEFINE_boolean('is_training', False, 'Is training?')
@@ -70,6 +70,7 @@ def vis(dataset_split):
                 prediction = list(prediction)
                 # top_left -> top_right -> bottom_right -> bottom_left
                 prediction = prediction[:4] + prediction[-2:] + prediction[4:6]
+                prediction = prediction[0:2][::-1] + prediction[2:4][::-1] + prediction[4:6][::-1] + prediction[-2:][::-1]
 
                 pil_image = Image.fromarray(image)
                 draw = ImageDraw.Draw(pil_image)
