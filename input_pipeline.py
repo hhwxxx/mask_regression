@@ -9,9 +9,13 @@ import os
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 
-flags.DEFINE_string('tfrecord_folder', './tfrecords', 'Folder containing tfrecords.')
+flags.DEFINE_string('tfrecord_folder', './tfrecords/rectangle_3channel', 
+                    'Folder containing tfrecords.')
 
-IMAGE_SHAPE = (512, 512, 1)
+IMAGE_SHAPE = (224, 224, 3)
+height = IMAGE_SHAPE[0]
+width = IMAGE_SHAPE[1]
+channel = IMAGE_SHAPE[2]
 
 NUMBER_TRAIN_DATA = 5000
 NUMBER_VAL_DATA = 1500
@@ -39,19 +43,21 @@ def decode(serialized_example):
         }
     )
 
-    image = tf.image.decode_jpeg(features['image/data'], channels=1)
+    image = tf.image.decode_jpeg(features['image/data'], channels=channel)
 
-    top_left_height = features['label/top_left_height'] / IMAGE_SHAPE[0]
-    top_left_width = features['label/top_left_width'] / IMAGE_SHAPE[1]
-    top_right_height = features['label/top_right_height'] / IMAGE_SHAPE[0]
-    top_right_width = features['label/top_right_height'] / IMAGE_SHAPE[1]
-    bottom_left_height = features['label/bottom_left_height'] / IMAGE_SHAPE[0]
-    bottom_left_width = features['label/bottom_left_width'] / IMAGE_SHAPE[1]
-    bottom_right_height = features['label/bottom_right_height'] / IMAGE_SHAPE[0]
-    bottom_right_width = features['label/bottom_right_width'] / IMAGE_SHAPE[1]
+    top_left_height = features['label/top_left_height'] / height
+    top_left_width = features['label/top_left_width'] / width
+    top_right_height = features['label/top_right_height'] / height
+    top_right_width = features['label/top_right_width'] / width
+    bottom_left_height = features['label/bottom_left_height'] / height
+    bottom_left_width = features['label/bottom_left_width'] / width
+    bottom_right_height = features['label/bottom_right_height'] / height
+    bottom_right_width = features['label/bottom_right_width'] / width
 
-    coordinates = tf.stack([top_left_height, top_left_width, top_right_height, top_right_width,
-        bottom_left_height, bottom_left_width, bottom_right_height, bottom_right_width])
+    coordinates = tf.stack([top_left_height, top_left_width, 
+                            top_right_height, top_right_width, 
+                            bottom_left_height, bottom_left_width, 
+                            bottom_right_height, bottom_right_width])
     coordinates = tf.cast(coordinates, tf.float32)
 
     return image, coordinates

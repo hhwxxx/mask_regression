@@ -2,32 +2,43 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import sys
+sys.path.extend(['/home/hhw/work/hikvision', '/home/hhw/work/hikvision/slim'])
+
 import tensorflow as tf
 import numpy as np
 import os
 import time
 from datetime import datetime
 import input_pipeline
-import model
+import core
+import models
 
 
+slim = tf.contrib.slim
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 
 flags.DEFINE_integer('log_frequency', 10, 'Log frequency.')
-flags.DEFINE_string('train_dir', './exp/train_04/train', 'Training directory.')
-flags.DEFINE_string('dataset_split', 'train', 'Using which dataset split to train the network.')
+flags.DEFINE_string('model_variant', 'resnet_50', 'Model to train.')
+flags.DEFINE_string('train_dir', './exp/resnet_50_03/train', 'Training directory.')
+flags.DEFINE_string('dataset_split', 'train', 
+                    'Using which dataset split to train the network.')
 flags.DEFINE_integer('batch_size', 16, 'Batch size used for train.')
 flags.DEFINE_boolean('is_training', True, 'Is training?')
-flags.DEFINE_float('initial_learning_rate', 0.0001, 'Initial learning rate.')
-flags.DEFINE_integer('decay_epochs', 60, 'Decay steps in exponential learning rate decay policy.')
-flags.DEFINE_float('decay_rate', 0.1, 'Decay rate in exponential learning rate decay policy.')
+flags.DEFINE_float('initial_learning_rate', 0.001, 'Initial learning rate.')
+flags.DEFINE_integer('decay_epochs', 50, 
+                     'Decay steps in exponential learning rate decay policy.')
+flags.DEFINE_float('decay_rate', 0.1, 
+                   'Decay rate in exponential learning rate decay policy.')
 flags.DEFINE_boolean('staircase', True, 'Staircase?')
-flags.DEFINE_integer('num_epochs', 100, 'Number epochs.')
+flags.DEFINE_integer('num_epochs', 90, 'Number epochs.')
 flags.DEFINE_integer('save_checkpoint_steps', 500, 'Save checkpoint steps.')
+flags.DEFINE_string('restore_ckpt_path', './init_models/resnet_v2_50.ckpt', 
+                    'Path to restore checkpoint.')
 
 
-def train(dataset_split):
+def train(model_variant, dataset_split):
     with tf.Graph().as_default() as g:
         global_step  = tf.train.get_or_create_global_step()
 
@@ -35,34 +46,46 @@ def train(dataset_split):
             images, labels = input_pipeline.inputs(dataset_split, FLAGS.is_training, 
                                                    FLAGS.batch_size, num_epochs=None)
         
-        predictions = model.inference(images, is_training=FLAGS.is_training)
+        predictions = core.inference(model_variant, images, 
+                                     is_training=FLAGS.is_training)
 
-        total_loss = model.loss(predictions, labels)
+        total_loss = core.loss(predictions, labels)
+
+        # metric
+        mean_absolute_error, update_op = tf.metrics.mean_absolute_error(
+            labels=labels, predictions=predictions, 
+            updates_collections=tf.GraphKeys.UPDATE_OPS, name='mean_absolute_error')
+        tf.summary.scalar('train/mean_absolute_error', update_op)
 
         steps_per_epoch = np.ceil(input_pipeline.NUMBER_TRAIN_DATA / FLAGS.batch_size)
         decay_steps = FLAGS.decay_epochs * steps_per_epoch
 
-        learning_rate = tf.train.exponential_decay(FLAGS.initial_learning_rate,
-                                                   global_step, decay_steps,
-                                                   FLAGS.decay_rate, staircase=FLAGS.staircase)
+        learning_rate = tf.train.exponential_decay(
+            FLAGS.initial_learning_rate, global_step, decay_steps,
+            FLAGS.decay_rate, staircase=FLAGS.staircase)
         tf.summary.scalar('learning_rate', learning_rate)
 
         with tf.variable_scope('adam_vars'): 
             optimizer = tf.train.AdamOptimizer(learning_rate)
+            # update moving mean/var in batch_norm layers
             update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
             with tf.control_dependencies(update_ops):
                 train_op = optimizer.minimize(total_loss, global_step)
 
 
         adam_vars = optimizer.variables()
-        def name_in_checkpoint(var):
-            return var.op.name.replace(FLAGS.model_variant, 'vgg_16')
-        #variables_to_restore = slim.get_variables_to_restore(exclude=models.EXCLUDE_LIST_MAP[FLAGS.model_variant]+['adam_vars'])
-        #variables_to_restore = {name_in_checkpoint(var):var for var in variables_to_restore if not 'BatchNorm' in var.op.name}
+        # def name_in_checkpoint(var):
+        #     return var.op.name.replace(FLAGS.model_variant, 'vgg_16')
+        variables_to_restore = slim.get_variables_to_restore(
+            exclude=models.EXCLUDE_LIST_MAP[FLAGS.model_variant] + ['global_step', 'adam_vars'])
+        #variables_to_restore = {name_in_checkpoint(var):var \
+        #    for var in variables_to_restore if not 'BatchNorm' in var.op.name}
         #variables_to_restore = {name_in_checkpoint(var):var for var in variables_to_restore}
-        #restorer = tf.train.Saver(variables_to_restore)
-        #def init_fn(scaffold, sess):
-        #    restorer.restore(sess, FLAGS.restore_ckpt_path)
+
+        restorer = tf.train.Saver(variables_to_restore)
+        def init_fn(scaffold, sess):
+            restorer.restore(sess, FLAGS.restore_ckpt_path)
+
 
         class _LoggerHook(tf.train.SessionRunHook):
             def begin(self):
@@ -95,13 +118,15 @@ def train(dataset_split):
                     print (format_str % (datetime.now(), self._step, loss_value,
                                     examples_per_sec, sec_per_batch))
 
+
         training_steps = steps_per_epoch * FLAGS.num_epochs
 
         config = tf.ConfigProto(log_device_placement=False)
         config.gpu_options.allow_growth = True
+
         with tf.train.MonitoredTrainingSession(
             checkpoint_dir=FLAGS.train_dir,
-            scaffold=tf.train.Scaffold(),
+            scaffold=tf.train.Scaffold(init_fn=init_fn),
             hooks=[tf.train.StopAtStepHook(last_step=training_steps),
                    tf.train.NanTensorHook(total_loss),
                    _LoggerHook()],
@@ -114,7 +139,7 @@ def train(dataset_split):
 def main(unused_argv):
     if not os.path.exists(FLAGS.train_dir): 
         os.makedirs(FLAGS.train_dir)
-    train(FLAGS.dataset_split)
+    train(FLAGS.model_variant, FLAGS.dataset_split)
 
 
 if __name__ == '__main__':
