@@ -12,9 +12,9 @@ import glob
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 
-flags.DEFINE_string('csv_dir', './mask_data/rectangle_3channel/', 
+flags.DEFINE_string('csv_dir', './mask_data/quadrilateral/', 
                     'Directory containing lists for training and validation.')
-flags.DEFINE_string('output_dir', './tfrecords/rectangle_3channel/', 
+flags.DEFINE_string('output_dir', './tfrecords/quadrilateral/', 
                     'Directory to save tfrecord.')
 flags.DEFINE_string('image_format', 'png', 'Image format')
 

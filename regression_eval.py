@@ -15,11 +15,11 @@ import time
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 
-flags.DEFINE_string('checkpoint_dir', './exp/resnet_50_03/train',
+flags.DEFINE_string('checkpoint_dir', './exp/vgg_16_quadrilateral_01/train',
                     'Directory containing trained checkpoints.')
-flags.DEFINE_string('eval_dir', './exp/resnet_50_03/eval', 
+flags.DEFINE_string('eval_dir', './exp/vgg_16_quadrilateral_01/eval', 
                     'Evaluation directory.')
-flags.DEFINE_string('model_variant', 'resnet_50', 'Model variant.')
+flags.DEFINE_string('model_variant', 'vgg_16', 'Model variant.')
 flags.DEFINE_string('dataset_split', 'val', 'Dataset split used to evaluate.')
 flags.DEFINE_integer('batch_size', 2, 'Batch size.')
 flags.DEFINE_boolean('is_training', False, 'Is training?')

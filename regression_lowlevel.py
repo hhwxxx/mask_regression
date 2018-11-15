@@ -20,21 +20,22 @@ flags = tf.app.flags
 FLAGS = flags.FLAGS
 
 flags.DEFINE_integer('log_frequency', 10, 'Log frequency.')
-flags.DEFINE_string('model_variant', 'resnet_50', 'Model to train.')
-flags.DEFINE_string('train_dir', './exp/resnet_50_03/train', 'Training directory.')
+flags.DEFINE_string('model_variant', 'vgg_16', 'Model to train.')
+flags.DEFINE_string('train_dir', './exp/vgg_16_quadrilateral_01/train', 
+                    'Training directory.')
 flags.DEFINE_string('dataset_split', 'train', 
                     'Using which dataset split to train the network.')
 flags.DEFINE_integer('batch_size', 16, 'Batch size used for train.')
 flags.DEFINE_boolean('is_training', True, 'Is training?')
-flags.DEFINE_float('initial_learning_rate', 0.001, 'Initial learning rate.')
-flags.DEFINE_integer('decay_epochs', 50, 
+flags.DEFINE_float('initial_learning_rate', 0.0001, 'Initial learning rate.')
+flags.DEFINE_integer('decay_epochs', 90, 
                      'Decay steps in exponential learning rate decay policy.')
 flags.DEFINE_float('decay_rate', 0.1, 
                    'Decay rate in exponential learning rate decay policy.')
 flags.DEFINE_boolean('staircase', True, 'Staircase?')
-flags.DEFINE_integer('num_epochs', 90, 'Number epochs.')
+flags.DEFINE_integer('num_epochs', 150, 'Number epochs.')
 flags.DEFINE_integer('save_checkpoint_steps', 500, 'Save checkpoint steps.')
-flags.DEFINE_string('restore_ckpt_path', './init_models/resnet_v2_50.ckpt', 
+flags.DEFINE_string('restore_ckpt_path', './init_models/vgg_16.ckpt', 
                     'Path to restore checkpoint.')
 
 

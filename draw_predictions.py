@@ -18,10 +18,10 @@ import shutil
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 
-flags.DEFINE_string('checkpoint_dir', './exp/resnet_50_03/train',
+flags.DEFINE_string('checkpoint_dir', './exp/vgg_16_quadrilateral_01/train',
                     'Directory containing trained checkpoints.')
-flags.DEFINE_string('model_variant', 'resnet_50', 'Model to use.')
-flags.DEFINE_string('vis_dir', './exp/resnet_50_03/vis', 'Training directory.')
+flags.DEFINE_string('model_variant', 'vgg_16', 'Model to use.')
+flags.DEFINE_string('vis_dir', './exp/vgg_quadrilateral_01/vis', 'Training directory.')
 flags.DEFINE_string('dataset_split', 'val',
                     'Using which dataset split to train the network.')
 flags.DEFINE_integer('batch_size', 1, 'Batch size used for visualization.')
