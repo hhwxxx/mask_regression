@@ -13,7 +13,7 @@ slim = tf.contrib.slim
 WEIGHT_DECAY = 0.0001
 DROPOUT_KEEP_PROB = 0.5
 BATCH_NORM_DECAY = 0.9
-NUMBER_OUTPUT = 8
+NUMBER_OUTPUT = 16
 
 
 exclude_list_custom = []
@@ -112,9 +112,15 @@ def vgg_16(images, is_training):
 def resnet_50(images, is_training):
     # images size is (None, 224, 224, 3), which is equal to default image size of ResNet-50.
     # net is final output without activation.
-    with slim.arg_scope(resnet_v2.resnet_arg_scope(batch_norm_decay=BATCH_NORM_DECAY)):
+    fine_tune_batch_norm = False
+    with slim.arg_scope(
+            resnet_v2.resnet_arg_scope(batch_norm_decay=BATCH_NORM_DECAY)):
         net, end_points = resnet_v2.resnet_v2_50(
-            inputs=images, num_classes=8, is_training=True, global_pool=True,
-            spatial_squeeze=True, scope='resnet_v2_50')
+            inputs=images,
+            num_classes=NUMBER_OUTPUT, 
+            is_training=(is_training and fine_tune_batch_norm), 
+            global_pool=True, 
+            spatial_squeeze=True, 
+            scope='resnet_v2_50')
     
     return net
