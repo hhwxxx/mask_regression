@@ -4,9 +4,10 @@ from __future__ import print_function
 
 
 import tensorflow as tf
-from slim.nets import resnet_v2
-# from tensorflow.contrib.slim.nets import resnet_v2
+from tensorflow.contrib.slim.nets import resnet_utils
 
+from slim.nets import resnet_v2
+import resnet_v1_beta
 
 slim = tf.contrib.slim
 
@@ -18,12 +19,16 @@ NUMBER_OUTPUT = 16
 
 exclude_list_custom = []
 exclude_list_vgg_16 = ['vgg_16/predictions']
-exclude_list_resnet_50 = ['resnet_v2_50/logits']
+exclude_list_resnet_v2_50 = ['resnet_v2_50/logits']
+exclude_list_resnet_v1_50_beta = ['resnet_v1_50/logits']
+exclude_list_resnet_v1_101_beta = ['resnet_v1_101/logits']
 
 EXCLUDE_LIST_MAP = {
     'custom': exclude_list_custom,
     'vgg_16': exclude_list_vgg_16,
-    'resnet_50': exclude_list_resnet_50,
+    'resnet_v2_50': exclude_list_resnet_v2_50,
+    'resnet_v1_50_beta': exclude_list_resnet_v1_50_beta,
+    'resnet_v1_101_beta': exclude_list_resnet_v1_101_beta,
 }
 
 
@@ -109,7 +114,7 @@ def vgg_16(images, is_training):
     return predictions
 
 
-def resnet_50(images, is_training):
+def resnet_v2_50(images, is_training):
     # images size is (None, 224, 224, 3), which is equal to default image size of ResNet-50.
     # net is final output without activation.
     fine_tune_batch_norm = False
@@ -124,3 +129,33 @@ def resnet_50(images, is_training):
             scope='resnet_v2_50')
     
     return net
+
+
+def resnet_v1_50_beta(images, is_training):
+    """ResNet-50 v1 beta.
+    Replace first 7*7 conv layers with three 3*3 conv layers.
+    """
+    fine_tune_batch_norm = False
+    with slim.arg_scope(resnet_utils.resnet_arg_scope()):
+        feature, end_points = resnet_v1_beta.resnet_v1_50_beta(
+            images,
+            num_classes=NUMBER_OUTPUT,
+            is_training=(is_training and fine_tune_batch_norm),
+            global_pool=True)
+    
+    return feature
+
+
+def resnet_v1_101_beta(images, is_training):
+    """ResNet-101 v1 beta.
+    Replace first 7*7 conv layers with three 3*3 conv layers.
+    """
+    fine_tune_batch_norm = False
+    with slim.arg_scope(resnet_utils.resnet_arg_scope()):
+        feature, end_points = resnet_v1_beta.resnet_v1_101_beta(
+            images,
+            num_classes=NUMBER_OUPUT,
+            is_training=(is_training and fine_tune_batch_norm),
+            global_pool=True)
+    
+    return feature
