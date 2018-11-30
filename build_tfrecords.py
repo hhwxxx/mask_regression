@@ -88,6 +88,14 @@ def _int64_list_feature(values):
 
 
 def _float_list_feature(values):
+    """Returns a TF-Feature of float_list.
+    
+    Args:
+        values: A float or list of floats.
+    
+    Returns:
+        A TF-Feature.
+    """
     if not isinstance(values, collections.Iterable):
         values = [values]
 
@@ -115,7 +123,7 @@ def build_tfrecord(dataset_split):
 
     data_csv = pd.read_csv(os.path.join(FLAGS.csv_dir, dataset_split + '.csv'))
 
-    image_reader = ImageReader(image_format=FLAGS.image_format, channels=1)
+    image_reader = ImageReader(image_format=FLAGS.image_format, channels=3)
 
     output_filename = os.path.join(FLAGS.output_dir, dataset_split + '.tfrecord')
     with tf.python_io.TFRecordWriter(output_filename) as tfrecord_writer:
@@ -123,7 +131,8 @@ def build_tfrecord(dataset_split):
             image_filename = data_csv.iloc[i]['filename']
             image_name = image_filename.split('/')[-1]
             image_data = tf.gfile.FastGFile(image_filename, 'rb').read()
-            image_height, image_width = image_reader.read_image_dims(image_data)
+            image_height, image_width = image_reader.read_image_dims(
+                image_data)
 
             top_left_height = ast.literal_eval(
                 str(data_csv.iloc[i]['top_left_height']))
@@ -170,9 +179,10 @@ def main(unused_argv):
     if not os.path.exists(FLAGS.output_dir):
         os.makedirs(FLAGS.output_dir)
     
-    build_tfrecord(dataset_split='train')
-    build_tfrecord(dataset_split='val')
-    build_tfrecord(dataset_split='test')
+    dataset = ['train', 'val', 'test']
+    for dataset_split in dataset:
+        build_tfrecord(dataset_split)
+        print('Finished processing', dataset_split)
     
     print('Finished.')
 
