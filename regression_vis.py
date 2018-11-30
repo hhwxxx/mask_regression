@@ -72,25 +72,37 @@ def vis(model_variant, tfrecord_dir, dataset_split):
                 checkpoint_dir=FLAGS.checkpoint_dir)) as mon_sess:
             cur_iter = 0
             while cur_iter < num_iters:
-                image, prediction = mon_sess.run([images, predictions])
+                print('Visualizing {:06d}.png'.format(cur_iter))
+                image, labels_, predictions_ = mon_sess.run(
+                    [images, labels, predictions])
                 # image shape is (224, 224, 3)
                 image = np.squeeze(image)
                 image = np.uint8(image * 255.0)
-                # image_name = image_name[0]
-                # print('Visualizing {}'.format(image_name))
-                print('Visualizing {:06d}.png'.format(cur_iter))
-
-                prediction = prediction * input_pipeline.IMAGE_SHAPE[0]
-                prediction = list(prediction)
-                # top_left -> top_right -> bottom_right -> bottom_left
-                prediction = prediction[:4] + prediction[-2:] + prediction[4:6]
-                # point is represented as (width, height) in PIL
-                prediction = (prediction[0:2][::-1] + prediction[2:4][::-1]
-                              + prediction[4:6][::-1] + prediction[-2:][::-1]
-
+                labels_ = np.squeeze(labels_)
+                
+                predictions_ = predictions_ * input_pipeline.IMAGE_SHAPE[0]
+                labels_ = labels_ * input_pipeline.IMAGE_SHAPE[0]
+                
+                predictions_ = list(np.split(predictions_, indices_or_sections=2))
+                labels_ = list(np.split(labels_, indices_or_sections=2))
                 pil_image = Image.fromarray(image)
                 draw = ImageDraw.Draw(pil_image)
-                draw.polygon(prediction, outline=(255, 0, 0))
+                for prediction, label in zip(predictions_, labels_):
+                    prediction = list(prediction)
+                    label = list(label)
+                    # top_left -> top_right -> bottom_right -> bottom_left
+                    prediction = prediction[:4] + prediction[-2:] + prediction[4:6]
+                    label = label[:4] + label[-2:] + label[4:6]
+                    # point is represented as (width, height) in PIL
+                    prediction = (prediction[0:2][::-1]
+                                  + prediction[2:4][::-1]
+                                  + prediction[4:6][::-1]
+                                  + prediction[-2:][::-1])
+                    label = (label[0:2][::-1] + label[2:4][::-1]
+                             + label[4:6][::-1] + label[-2:][::-1])
+                    
+                    draw.polygon(label, outline=(0, 255, 0))
+                    draw.polygon(prediction, outline=(255, 0, 0))
 
                 pil_image.save('{}/{:06}.png'.format(FLAGS.vis_dir, cur_iter),
                                format='PNG')
