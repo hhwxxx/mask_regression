@@ -92,9 +92,11 @@ def train(model_variant, tfrecord_dir, dataset_split):
         variables_to_restore = slim.get_variables_to_restore(
             exclude=(models.EXCLUDE_LIST_MAP[FLAGS.model_variant]
                      + ['global_step', 'adam_vars']))
-        #variables_to_restore = {name_in_checkpoint(var):var \
-        #    for var in variables_to_restore if not 'BatchNorm' in var.op.name}
-        #variables_to_restore = {name_in_checkpoint(var):var for var in variables_to_restore}
+        # variables_to_restore = {name_in_checkpoint(var):var
+        #     for var in variables_to_restore
+        #         if not 'BatchNorm' in var.op.name}
+        # variables_to_restore = {name_in_checkpoint(var):var
+        #     for var in variables_to_restore}
 
         restorer = tf.train.Saver(variables_to_restore)
         def init_fn(scaffold, sess):
