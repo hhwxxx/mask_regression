@@ -191,21 +191,20 @@ class CosineLoss(Loss):
         Returns:
             cosine_loss: mean squared error of cosine.
         """
-        predictions = tf.split(predictions, num_or_size_splits=2, axis=1)
-        labels = tf.split(labels, num_or_size_splits=2, axis=1)
+        prediction_tensor = tf.split(prediction_tensor, num_or_size_splits=2, axis=1)
+        target_tensor = tf.split(target_tensor, num_or_size_splits=2, axis=1)
 
-        weights = tf.constant([1, 1], dtype=tf.float32)
         cosine_loss_list = []
-        for prediction, label in zip(predictions, labels):
+        for prediction, label in zip(prediction_tensor, target_tensor):
             #_individual_cosine_loss = tf.where(
             #    tf.equal(tf.reduce_sum(label), tf.constant(0, dtype=tf.float32)), 
             #    tf.constant(0, dtype=tf.float32), 
             #    _compute_cosine_loss(prediction, label)) 
             #cosine_loss_list.append(_individual_cosine_loss)
-            cosine_loss_list.append(_compute_cosine_loss(prediction, label))
+            cosine_loss_list.append(self._compute_cosine_loss(prediction, label))
 
         cosine_loss_list = tf.convert_to_tensor(cosine_loss_list)
-        cosine_loss = tf.reduce_sum(cosine_loss_list * weights)
+        cosine_loss = tf.reduce_sum(cosine_loss_list * self.weights)
 
         return cosine_loss
 
@@ -346,17 +345,20 @@ class PointMSE(Loss):
     def _compute_loss(self, prediction_tensor, target_tensor):
         prediction_tensor = tf.split(prediction_tensor, num_or_size_splits=2, axis=1)
         target_tensor = tf.split(target_tensor, num_or_size_splits=2, axis=1)
-        weights = tf.constant([1, 1], dtype=tf.float32)
+        
         mse_list = []
         for prediction, label in zip(prediction_tensor, target_tensor):
-            mse_list.append(tf.losses.mean_squared_error(
-                labels=label, predictions=prediction, 
-                scope='mean_squared_error'))
+            mse_list.append(
+                self._compute_mse_loss(predictions=prediction, labels=label))
 
         mse_list = tf.convert_to_tensor(mse_list)
-        mse_loss = tf.reduce_sum(mse_list * weights)
+        mse_loss = tf.reduce_sum(mse_list * self._weights)
 
         return mse_loss
+
+    def _compute_mse_loss(self, predictions, labels):
+        return tf.losses.mean_squared_error(
+            labels=labels, predictions=predictions, scope='mean_squared_error')
 
 
 def loss(predictions, labels):
