@@ -5,8 +5,9 @@ from __future__ import print_function
 import tensorflow as tf
 import models
 
-slim = tf.contrib.slim
+import losses
 
+slim = tf.contrib.slim
 
 MODEL_MAP = {
     'custom': models.custom,
@@ -285,35 +286,79 @@ def _point_mse(predictions, labels):
     return mse_loss
 
 
+# def loss(predictions, labels):
+#     """Compute loss.
+
+#     Args:
+#         predictions -- model predictions with shape (batch_size, 16).
+#         labels -- ground truth with shape (batch_size, 16).
+#     Return:
+#         total_loss -- loss.
+#     """
+#     # absolute difference
+#     # absolute_loss = tf.losses.absolute_difference(
+#     #     labels=labels, predictions=predictions, scope='absolute_difference_loss')
+    
+#     # huber loss
+#     # huber_loss = tf.losses.huber_loss(
+#     #     lables=labels, predictions=predictions, delta=1.0, scope='huber_loss')
+    
+#     # mean squared error
+#     # mean_squared_error = tf.losses.mean_squared_error(
+#     #     labels=labels, predictions=predictions, scope='mean_squared_error')
+#     # mean squared error
+#     mean_squared_error = _point_mse(predictions, labels)
+
+#     # distance loss
+#     distance_loss = _distance_loss(predictions, labels)
+
+#     # cosine loss
+#     cosine_loss = _cosine_loss(predictions, labels)
+    
+#     # regularization loss
+#     regularization_loss = tf.losses.get_regularization_loss()
+
+#     # total_loss without regularization_loss
+#     total_loss = 3 * mean_squared_error + distance_loss + 2 * cosine_loss
+#     # total_loss = 3 * mean_squared_error + distance_loss
+#     total_loss = tf.identity(total_loss, 'total_loss')
+
+#     tf.summary.scalar('losses/mean_square_loss', mean_squared_error)
+#     tf.summary.scalar('losses/distance_loss', distance_loss)
+#     tf.summary.scalar('losses/cosine_loss', cosine_loss)
+#     tf.summary.scalar('losses/regularization_loss', regularization_loss)
+#     tf.summary.scalar('losses/total_loss', total_loss)
+
+#     return total_loss
+
+
 def loss(predictions, labels):
-    """Compute loss.
+    """Compute total loss.
 
     Args:
-        predictions -- model predictions with shape (batch_size, 16).
-        labels -- ground truth with shape (batch_size, 16).
-    Return:
-        total_loss -- loss.
+        predictions: a float tensor of shape (batch, 16) representing 
+            predicted value.
+        labels: a float tensor with shape (batch, 16) representing
+            ground truth.
+
+    Returns:
+        total_loss: a float tensor representing value of total loss.
     """
-    # absolute difference
-    # absolute_loss = tf.losses.absolute_difference(
-    #     labels=labels, predictions=predictions, scope='absolute_difference_loss')
-    
-    # huber loss
-    # huber_loss = tf.losses.huber_loss(
-    #     lables=labels, predictions=predictions, delta=1.0, scope='huber_loss')
-    
-    # mean squared error
-    # mean_squared_error = tf.losses.mean_squared_error(
-    #     labels=labels, predictions=predictions, scope='mean_squared_error')
-    # mean squared error
-    mean_squared_error = _point_mse(predictions, labels)
+    # weights of two output parts
+    weights = [1, 1]
+
+    # point mean squared error
+    point_mse = losses.PointMSE(weights)(
+        predictions, labels, ignore_zero_targets=True, scope='PointMSE')
 
     # distance loss
-    distance_loss = _distance_loss(predictions, labels)
+    distance_loss = losses.DistanceLoss(weigths)(
+        predictions, labels, ignore_zero_targets=True, scope='DistanceLoss')
 
-    # cosine loss
-    cosine_loss = _cosine_loss(predictions, labels)
-    
+    # cosine_loss
+    cosine_loss = losses.CosineLoss(weights)(
+        predictions, labels, ignore_zero_targets=True, scope='CosineLoss')
+
     # regularization loss
     regularization_loss = tf.losses.get_regularization_loss()
 
