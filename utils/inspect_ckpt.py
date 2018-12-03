@@ -9,8 +9,12 @@ from tensorflow.python.tools import inspect_checkpoint as chkp
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 
-flags.DEFINE_string('ckpt_dir', './init_models/resnet18/tf_resnet18/variables', 'Checkpoint directory.')
-flags.DEFINE_string('checkpoint', '/home/hhw/work/hikvision/init_models/resnet_v2_50.ckpt', 'Checkpoint directory.')
+flags.DEFINE_string('ckpt_dir',
+                    './init_models/resnet18/tf_resnet18/variables',
+                    'Checkpoint directory.')
+flags.DEFINE_string('checkpoint',
+                    '/home/hhw/work/hikvision/init_models/resnet_v2_50.ckpt',
+                    'Checkpoint directory.')
 
 
 def inspect_ckpt(ckpt_dir):

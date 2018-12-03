@@ -189,7 +189,7 @@ class Quadrilateral(object):
 
         mask = mask1 * mask2
         mask = mask.astype(np.bool)
-        threshold = 1000
+        threshold = 500
         num_overlap_pixel = np.sum(mask)
 
         if num_overlap_pixel > threshold:

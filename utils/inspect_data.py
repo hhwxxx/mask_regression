@@ -44,7 +44,7 @@ def main(csv_file, save_dir):
         
         coordinates = [top_left, top_right, bottom_right, bottom_left]
 
-	    img = Image.open(filename)
+        img = Image.open(filename)
 
         img = draw_outline(img, coordinates)
         

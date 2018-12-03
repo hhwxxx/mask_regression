@@ -31,7 +31,7 @@ class Loss(object):
             loss: a tensor representing the value of the loss function.
         """
         with tf.name_scope(
-                scope, 'Loss', [prediction_tesnor, target_tensor]) as scope:
+                scope, 'Loss', [prediction_tensor, target_tensor]) as scope:
             if ignore_zero_targets:
                 target_tensor = tf.where(tf.equal(target_tensor, 0),
                                          prediction_tensor,
@@ -204,7 +204,7 @@ class CosineLoss(Loss):
             cosine_loss_list.append(self._compute_cosine_loss(prediction, label))
 
         cosine_loss_list = tf.convert_to_tensor(cosine_loss_list)
-        cosine_loss = tf.reduce_sum(cosine_loss_list * self.weights)
+        cosine_loss = tf.reduce_sum(cosine_loss_list * self._weights)
 
         return cosine_loss
 
@@ -262,7 +262,7 @@ class CosineLoss(Loss):
 
         return cosine_loss
 
-    def _compute_slope(self, predictions, labels):
+    def _compute_slope(self, x, y):
         """Compute slope between points x and y.
 
         slope = delta_height / delta_width
@@ -285,7 +285,7 @@ class CosineLoss(Loss):
 
         return slope
 
-    def _compute_cosine(self, predictions, labels):
+    def _compute_cosine(self, x, y):
         """Compute cosine between points x and y.
 
         cosine = delta_width / distance(x, y)
@@ -306,9 +306,8 @@ class CosineLoss(Loss):
         distance = self._euclidean_distance(x, y)
 
         epsilon = 1e-3
-        cosine = delta_width / (distance + epsilon)
-
-        # cosine = delta_width / distance
+        # cosine = delta_width / (distance + epsilon)
+        cosine = delta_width / distance
 
         return cosine
 
@@ -359,47 +358,3 @@ class PointMSE(Loss):
     def _compute_mse_loss(self, predictions, labels):
         return tf.losses.mean_squared_error(
             labels=labels, predictions=predictions, scope='mean_squared_error')
-
-
-def loss(predictions, labels):
-    """Compute total loss.
-
-    Args:
-        predictions: a float tensor of shape (batch, 16) representing 
-            predicted value.
-        labels: a float tensor with shape (batch, 16) representing
-            ground truth.
-
-    Returns:
-        total_loss: a float tensor representing value of total loss.
-    """
-    # weights of two output parts
-    weights = [1, 1]
-
-    # point mean squared error
-    point_mse = PointMSE(weights)(
-        predictions, labels, ignore_zero_targets=True, scope='PointMSE')
-
-    # distance loss
-    distance_loss = DistanceLoss(weigths)(
-        predictions, labels, ignore_zero_targets=True, scope='DistanceLoss')
-
-    # cosine_loss
-    cosine_loss = CosineLoss(weights)(
-        predictions, labels, ignore_zero_targets=True, scope='CosineLoss')
-
-    # regularization loss
-    regularization_loss = tf.losses.get_regularization_loss()
-
-    # total_loss without regularization_loss
-    total_loss = 3 * mean_squared_error + distance_loss + 2 * cosine_loss
-    # total_loss = 3 * mean_squared_error + distance_loss
-    total_loss = tf.identity(total_loss, 'total_loss')
-
-    tf.summary.scalar('losses/mean_square_loss', mean_squared_error)
-    tf.summary.scalar('losses/distance_loss', distance_loss)
-    tf.summary.scalar('losses/cosine_loss', cosine_loss)
-    tf.summary.scalar('losses/regularization_loss', regularization_loss)
-    tf.summary.scalar('losses/total_loss', total_loss)
-
-    return total_loss

@@ -131,7 +131,7 @@ def train(model_variant, tfrecord_dir, dataset_split):
                                         * FLAGS.batch_size / duration)
                     sec_per_batch = float(duration / FLAGS.log_frequency)
 
-                    format_str = ('%s: step %d, loss = %.5f 
+                    format_str = ('%s: step %d, loss = %.5f '
                                   '(%.1f examples/sec; %.3f sec/batch)')
                     print(format_str % (datetime.now(), self._step, loss_value, 
                                         examples_per_sec, sec_per_batch))

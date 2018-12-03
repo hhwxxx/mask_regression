@@ -2,7 +2,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import random
 import os
+import shutil
 import functools
 
 import numpy as np
@@ -13,8 +15,8 @@ from skimage import morphology
 from quadrilateral import Quadrilateral
 
 
-SAVE_DIR = './mask_data/quadrilateral_1_2'
-MASK_TYPE = 'two_connected_quadrilaterals'
+SAVE_DIR = '../mask_data/test/quadrilateral_1_2'
+MASK_TYPE = 'two_quadrilaterals'
 IMAGE_SHAPE = (224, 224, 3)
 HEIGHT, WIDTH, CHANNEL = IMAGE_SHAPE
 NUM_IMAGES = {
@@ -29,18 +31,6 @@ CSV_COLUMNS = [
     'bottom_left_height', 'bottom_left_width',
     'bottom_right_height', 'bottom_right_width',
 ]
-MASK_TYPE_MAP = {
-    'one_rectangle':create_rectangle_1,
-    'one_quadrilateral': create_quadrilateral_1,
-    'two_quadrilaterals': create_quadrilateral_2,
-    'three_quadrilaterals': create_quadrilateral_3,
-    'one_or_two_quadrilaterals': create_quadrilateral_1_2,
-    'one_or_two_or_three_quadrilaterals': create_quadrilateral_1_2_3,
-    'two_connected_quadrilaterals': functools.partial(create_quadrilateral_2, connected=True),
-    'three_connected_quadrilaterals': functools.partial(create_quadrilateral_3, connected=True),
-    'one_or_two_connected_quadrilaterals': functools.partial(create_quadrilateral_1_2, connected=True),
-    'one_or_two_or_three_connected_quadrilaterals': functools.partial(create_quadrilateral_1_2_3, connected=True),
-}
 
 
 def create_rectangle_1():
@@ -50,7 +40,7 @@ def create_rectangle_1():
         quadrilateral_list: List of Quadrilateral instances.
     """
     quadrilateral_1 = Quadrilateral([])
-    quadrilateral_1.quadrilateral = quadrilateral.create_rectangle()
+    quadrilateral_1.quadrilateral = quadrilateral_1.create_rectangle()
     quadrilateral_list = [quadrilateral_1]
 
     return quadrilateral_list
@@ -70,6 +60,9 @@ def create_quadrilateral_1():
 
 def create_quadrilateral_2(connected=False):
     """Create 2 quadrilaterals per image.
+
+    Args:
+        connected: contain connected masks or not.
 
     Returns:
         quadrilateral_list: List of Quadrilateral instances.
@@ -106,6 +99,9 @@ def create_quadrilateral_2(connected=False):
 
 def create_quadrilateral_3(connected=False):
     """Create 3 quadrilaterals per image.
+
+    Args:
+        connected: contain connected masks or not.
 
     Returns:
         quadrilateral_list: List of Quadrilateral instances.
@@ -161,6 +157,9 @@ def create_quadrilateral_3(connected=False):
 def create_quadrilateral_1_2(connected=False):
     """Create 1 or 2 quadrilaterals per image.
 
+    Args:
+        connected: contain connected masks or not.
+
     Returns:
         quadrilateral_list: List of Quadrilateral instances.
     """
@@ -177,6 +176,9 @@ def create_quadrilateral_1_2(connected=False):
 
 def create_quadrilateral_1_2_3(connected=False):
     """Create 1, 2 or 3 quadrilaterals per image.
+
+    Args:
+        connected: contain connected masks or not.
 
     Returns:
         quadrilateral_list: List of Quadrilateral instances.
@@ -306,14 +308,28 @@ if __name__ == '__main__':
     if os.path.exists(SAVE_DIR):
         shutil.rmtree(SAVE_DIR)
     os.makedirs(SAVE_DIR)
-
+    
+    MASK_TYPE_MAP = {
+        'one_rectangle': create_rectangle_1,
+        'one_quadrilateral': create_quadrilateral_1,
+        'two_quadrilaterals': create_quadrilateral_2,
+        'three_quadrilaterals': create_quadrilateral_3,
+        'one_or_two_quadrilaterals': create_quadrilateral_1_2,
+        'one_or_two_or_three_quadrilaterals': create_quadrilateral_1_2_3,
+        'two_connected_quadrilaterals': functools.partial(create_quadrilateral_2, connected=True),
+        'three_connected_quadrilaterals': functools.partial(create_quadrilateral_3, connected=True),
+        'one_or_two_connected_quadrilaterals': functools.partial(create_quadrilateral_1_2, connected=True),
+        'one_or_two_or_three_connected_quadrilaterals': functools.partial(create_quadrilateral_1_2_3, connected=True),
+    }
     if MASK_TYPE not in MASK_TYPE_MAP:
         raise ValueError('mask type must be one of supported type.')
+
     core_func = MASK_TYPE_MAP[MASK_TYPE]
     
     dataset = ['train', 'val', 'test']
     for dataset_split in dataset:
         save_dir = os.path.join(SAVE_DIR, dataset_split)
+        os.makedirs(save_dir)
         csv_file = os.path.join(SAVE_DIR, dataset_split + '.csv')
         num_images = NUM_IMAGES[dataset_split]
         main(save_dir, csv_file, num_images, core_func)
