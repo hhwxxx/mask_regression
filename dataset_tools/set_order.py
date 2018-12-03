@@ -3,13 +3,14 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+import shutil
 import ast
 
 import pandas as pd
 import numpy as np
 
-CSV_PATH = '/home/hhw/work/hikvision/utils/test'
-SAVE_PATH = '/home/hhw/work/hikvision/utils/test'
+CSV_PATH = '/home/hhw/work/hikvision/mask_data/quadrilateral_multiple'
+SAVE_PATH = '/home/hhw/work/hikvision/mask_data/test'
 
 CSV_COLUMNS = ['filename', 'top_left_height', 'top_left_width', 
                'top_right_height', 'top_right_width',
@@ -75,8 +76,9 @@ def main(dataset_split):
 
 if __name__ == '__main__':
     dataset = ['train', 'test', 'val']
-    if not os.path.exists(SAVE_PATH):
-        os.makedirs(SAVE_PATH)
+    if os.path.exists(SAVE_PATH):
+        shutil.rmtree(SAVE_PATH)
+    os.makedirs(SAVE_PATH)
     for dataset_split in dataset:
         main(dataset_split)
         print('Finish processing ' + dataset_split)
