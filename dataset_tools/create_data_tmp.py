@@ -15,8 +15,8 @@ from skimage import morphology
 from quadrilateral import Quadrilateral
 
 
-SAVE_DIR = '../mask_data/test/quadrilateral_1_2'
-MASK_TYPE = 'two_quadrilaterals'
+SAVE_DIR = '../mask_data/test/quadrilateral_2'
+MASK_TYPE = 'two_connected_quadrilaterals'
 IMAGE_SHAPE = (224, 224, 3)
 HEIGHT, WIDTH, CHANNEL = IMAGE_SHAPE
 NUM_IMAGES = {
@@ -75,6 +75,7 @@ def create_quadrilateral_2(connected=False):
         quadrilateral_1.update()
         cur_iter_num = 0
         max_iter_num = 5
+
         flag = False
         while cur_iter_num < max_iter_num:
             quadrilateral_2.update()
@@ -87,6 +88,7 @@ def create_quadrilateral_2(connected=False):
                 continue
             else:
                 break
+
         if flag:
             continue
         else:
@@ -114,6 +116,7 @@ def create_quadrilateral_3(connected=False):
         cur_iter_num = 0
         max_iter_num = 5
         flag = False
+        inner_flag = False
         while cur_iter_num < max_iter_num:
             quadrilateral_2.update()
             if connected:
@@ -126,7 +129,6 @@ def create_quadrilateral_3(connected=False):
             else:
                 inner_cur_iter_num = 0
                 inner_max_iter_num = 8
-                inner_flag = False
                 while inner_cur_iter_num < inner_max_iter_num:
                     quadrilateral_3.update()
                     if connected:

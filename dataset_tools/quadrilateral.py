@@ -183,17 +183,26 @@ class Quadrilateral(object):
                 'has type {}'.format(type(self), type(quadrilateral)))
         if not len(self._quadrilateral) or not len(quadrilateral._quadrilateral):
             raise ValueError('The `_quadrilateral` should not be empty.')
+        # TODO(hhw): write code to determine only one corner point inside
+        # another quadrilateral.
 
         mask1 = self.get_mask()
         mask2 = quadrilateral.get_mask()
 
         mask = mask1 * mask2
         mask = mask.astype(np.bool)
-        threshold = 500
+        threshold = 1000
         num_overlap_pixel = np.sum(mask)
 
         if num_overlap_pixel > threshold:
             is_overlap = True
+        elif num_overlap_pixel > 0:
+            flag = (self._only_one_point_inside(quadrilateral)
+                    and quadrilateral._only_one_point_inside(self))
+            if flag:
+                is_overlap = False
+            else:
+                is_overlap = True
         else:
             is_overlap = False
 
@@ -211,7 +220,7 @@ class Quadrilateral(object):
 
         for h in range(y_min, y_max + 1):
             for w in range(x_min, x_max + 1):
-                if self.is_point_inside((w, h)):
+                if self.is_point_inside((h, w)):
                     mask[h][w] = True
 
         return mask
@@ -273,6 +282,24 @@ class Quadrilateral(object):
             is_inside = False
 
         return is_inside
+
+    def _only_one_point_inside(self, quadrilateral):
+        """Check whether only one corner point of `quadrilateral` is inside
+        current quadrilateral.
+
+        Args:
+            quadrilateral: an instance of Quadrilateral.
+
+        Returns:
+            a boolean indicates whether only one corner point of `quadrilateral`
+            is inside current quadrilateral.
+        """
+        check_list = []
+        for point in quadrilateral.get():
+            check_list.append(self.is_point_inside(point))
+        check_list = np.array(check_list, dtype=np.int32)
+
+        return True if np.sum(check_list) == 1 else False
 
     def _random_shift(self, point):
         """Shift point randomly.
