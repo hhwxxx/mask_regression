@@ -16,6 +16,7 @@ class Loss(object):
     def __call__(self,
                  prediction_tensor,
                  target_tensor,
+                 modify_zero_targets=True,
                  ignore_zero_targets=False,
                  scope=None):
         """Call the loss object.
@@ -25,13 +26,28 @@ class Loss(object):
                 representing the predicted values of points.
             target_tensor: A float tensor of shape [batch, num_points]
                 representing the regression targets.
+            modify_zero_targets: whether to modify zeros targets to avoid
+                dividing by zero.
             ignore_zero_targets: whether to ignore nan targets in the loss computation.
+            scope: Op scope name. Defaults to 'Loss' if None.
 
         Returns:
             loss: a tensor representing the value of the loss function.
+
+        Raises:
+            ValueError: if both modify_zero_targets and ignore_zero_targets
+                        are True.
         """
         with tf.name_scope(
                 scope, 'Loss', [prediction_tensor, target_tensor]) as scope:
+            if modify_zero_targets and ignore_zero_targets:
+                raise ValueError('modify_zero_targets and ignore_zero_targets '
+                                 'should not be True at the same time.')
+            if modify_zero_targets:
+                target_tensor = tf.where(
+                    tf.equal(target_tensor, 0),
+                    target_tensor + 1e-3,
+                    target_tensor)
             if ignore_zero_targets:
                 target_tensor = tf.where(tf.equal(target_tensor, 0),
                                          prediction_tensor,
