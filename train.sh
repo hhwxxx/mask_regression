@@ -19,6 +19,8 @@ python "$CURRENT_DIR"/regression_train.py \
   --model_variant=$MODEL_VARIANT \
   --restore_ckpt_path=$RESTORE_CKPT_PATH \
   --train_dir=$TRAIN_DIR \
+  --weights=1 \
+  --weights=1 \
   --batch_size=64 \
   --is_training=True \
   --initial_learning_rate=0.0001 \
