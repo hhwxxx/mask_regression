@@ -33,12 +33,14 @@ flags.DEFINE_string('train_dir',
                     './exp/vgg_quadrilateral_multiple_01/train', 
                     'Training directory.')
 
-flags.DEFINE_integer('decay_epochs', 90, 
-                     'Decay steps in exponential learning rate decay policy.')
-flags.DEFINE_integer('num_epochs', 150, 'Number epochs.')
+flags.DEFINE_multi_integer('weights', [1, 1],
+                           'Weights used to compute loss.')
 flags.DEFINE_integer('batch_size', 8, 'Batch size used for train.')
 flags.DEFINE_boolean('is_training', True, 'Is training?')
 
+flags.DEFINE_integer('decay_epochs', 90, 
+                     'Decay steps in exponential learning rate decay policy.')
+flags.DEFINE_integer('num_epochs', 150, 'Number epochs.')
 flags.DEFINE_float('initial_learning_rate', 0.0001, 'Initial learning rate.')
 flags.DEFINE_float('decay_rate', 0.1, 
                    'Decay rate in exponential learning rate decay policy.')
@@ -54,13 +56,14 @@ def train(model_variant, tfrecord_dir, dataset_split):
 
         with tf.device('/cpu:0'):
             images, labels = input_pipeline.inputs(
-                tfrecord_dir, dataset_split, FLAGS.is_training, 
+                tfrecord_dir, dataset_split, FLAGS.is_training,
                 FLAGS.batch_size, num_epochs=None)
         
-        predictions = core.inference(model_variant, images, 
+        predictions = core.inference(model_variant, images,
                                      is_training=FLAGS.is_training)
 
-        total_loss = core.loss(predictions, labels)
+        total_loss = core.loss(predictions, labels,
+                               FLAGS.weights)
 
         # metric
         mean_absolute_error, update_op = tf.metrics.mean_absolute_error(
