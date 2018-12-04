@@ -12,10 +12,13 @@ import numpy as np
 CSV_PATH = '/home/hhw/work/hikvision/mask_data/quadrilateral_multiple'
 SAVE_PATH = '/home/hhw/work/hikvision/mask_data/test'
 
-CSV_COLUMNS = ['filename', 'top_left_height', 'top_left_width', 
-               'top_right_height', 'top_right_width',
-               'bottom_left_height', 'bottom_left_width', 
-               'bottom_right_height', 'bottom_right_width']
+CSV_COLUMNS = [
+    'filename',
+    'top_left_height', 'top_left_width',
+    'top_right_height', 'top_right_width',
+    'bottom_left_height', 'bottom_left_width',
+    'bottom_right_height', 'bottom_right_width'
+]
 
 
 def main(dataset_split):
@@ -55,11 +58,11 @@ def main(dataset_split):
         if len(top_left_height) > 1:
             height_list = list(zip(top_left_height, top_right_height))
             width_list = list(zip(top_left_width, bottom_left_width))
-            threshold = 10
+            threshold = 20
             # if delta height less than threshold, set the order of 
             # quadrilaterals according to width
             if abs(min(height_list[0]) - min(height_list[1])) < threshold:
-                if min(width_list[0]) > min(height_list[1]):
+                if min(width_list[0]) > min(width_list[1]):
                     coordinates = [x[::-1] for x in coordinates]
             # if delta height greater than threshold, set the order of
             # quadrilaterals according to height
