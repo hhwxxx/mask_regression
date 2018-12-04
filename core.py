@@ -37,7 +37,7 @@ def inference(model_variant, images, is_training=True):
     return predictions
 
 
-def loss(predictions, labels):
+def loss(predictions, labels, weights):
     """Compute total loss.
 
     Args:
@@ -45,13 +45,11 @@ def loss(predictions, labels):
             predicted value.
         labels: a float tensor with shape (batch, 16) representing
             ground truth.
+        weights: a list of integer representing weights of two output parts.
 
     Returns:
         total_loss: a float tensor representing value of total loss.
     """
-    # weights of two output parts
-    weights = [1, 1]
-
     # point mean squared error
     point_mse = losses.PointMSE(weights)(
         predictions, labels, ignore_zero_targets=True, scope='PointMSE')
