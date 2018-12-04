@@ -76,9 +76,8 @@ def main(dataset_split):
 
 if __name__ == '__main__':
     dataset = ['train', 'test', 'val']
-    if os.path.exists(SAVE_PATH):
-        shutil.rmtree(SAVE_PATH)
-    os.makedirs(SAVE_PATH)
+    if not os.path.exists(SAVE_PATH):
+        os.makedirs(SAVE_PATH)
     for dataset_split in dataset:
         main(dataset_split)
         print('Finish processing ' + dataset_split)
