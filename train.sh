@@ -2,6 +2,7 @@
 set -e
 
 export CUDA_VISIBLE_DEVICES=0
+export PYTHONPATH=$PYTHONPATH:/root/mask:/root/mask/slim
 
 CURRENT_DIR=$(pwd)
 
