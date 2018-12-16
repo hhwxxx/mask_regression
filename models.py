@@ -22,6 +22,7 @@ exclude_list_vgg_16 = ['vgg_16/predictions']
 exclude_list_resnet_v2_50 = ['resnet_v2_50/logits']
 exclude_list_resnet_v1_50_beta = ['resnet_v1_50/logits']
 exclude_list_resnet_v1_101_beta = ['resnet_v1_101/logits']
+exclude_list_resnet_v1_50_beta_lstm = ['lstm', 'logits']
 
 EXCLUDE_LIST_MAP = {
     'custom': exclude_list_custom,
@@ -29,6 +30,7 @@ EXCLUDE_LIST_MAP = {
     'resnet_v2_50': exclude_list_resnet_v2_50,
     'resnet_v1_50_beta': exclude_list_resnet_v1_50_beta,
     'resnet_v1_101_beta': exclude_list_resnet_v1_101_beta,
+    'resnet_v1_50_beta_lstm': exclude_list_resnet_v1_50_beta_lstm,
 }
 
 
@@ -154,8 +156,50 @@ def resnet_v1_101_beta(images, is_training):
     with slim.arg_scope(resnet_utils.resnet_arg_scope()):
         feature, end_points = resnet_v1_beta.resnet_v1_101_beta(
             images,
-            num_classes=NUMBER_OUPUT,
+            num_classes=NUMBER_OUTPUT,
             is_training=(is_training and fine_tune_batch_norm),
             global_pool=True)
     
     return feature
+
+
+def resnet_v1_50_beta_lstm(images, is_training):
+    """ResNet-50 v1 beta with lstm head.
+    Replace first 7*7 conv layers with three 3*3 conv layers.
+    """
+    fine_tune_batch_norm = False
+    with slim.arg_scope(resnet_utils.resnet_arg_scope()):
+        feature, end_points = resnet_v1_beta.resnet_v1_50_beta(
+            images,
+            num_classes=None,
+            is_training=(is_training and fine_tune_batch_norm),
+            global_pool=True)
+
+    with tf.variable_scope('lstm'):
+        # feature has shape (batch_size, feature_size)
+        feature = tf.squeeze(feature)
+        # feature has shape (1, batch_size, feature_size)
+        feature = tf.expand_dims(feature, axis=0)
+        # feature has shape (time_step, batch_size, feature_size)
+        feature = tf.tile(feature, (2, 1, 1))
+
+        lstm = tf.contrib.cudnn_rnn.CudnnLSTM(num_layers=1, num_units=128)
+        # lstm_output has shape (time_step, batch_size, 128)
+        lstm_output, state = lstm(feature)
+        # each element in lstm_output_list has shape (batch_size, 128)
+        lstm_output_list = tf.unstack(lstm_output, axis=0)
+    
+    output_list = []
+    with tf.variable_scope('logits'):
+        with slim.arg_scope([slim.fully_connected],
+                            activation_fn=None,
+                            weights_regularizer=slim.l2_regularizer(WEIGHT_DECAY)):
+            for element in lstm_output_list:
+                feature = slim.fully_connected(element, NUMBER_OUTPUT // 2,
+                                               activation_fn=None,
+                                               normalizer_fn=None)
+                output_list.append(feature)
+            # output has shape (batch_size, NUMBER_OUTPUT)
+            output = tf.concat(output_list, axis=1)
+
+    return output

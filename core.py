@@ -15,6 +15,7 @@ MODEL_MAP = {
     'resnet_v2_50': models.resnet_v2_50,
     'resnet_v1_50_beta': models.resnet_v1_50_beta,
     'resnet_v1_101_beta': models.resnet_v1_101_beta,
+    'resnet_v1_50_beta_lstm': models.resnet_v1_50_beta_lstm,
 }
 
 
