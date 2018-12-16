@@ -9,15 +9,15 @@ import ast
 import pandas as pd
 import numpy as np
 
-CSV_PATH = '/home/hhw/work/hikvision/mask_data/quadrilateral_multiple'
-SAVE_PATH = '/home/hhw/work/hikvision/mask_data/test'
+CSV_PATH = '/data/mask/mask_data/quadrilateral_2'
+SAVE_PATH = '/data/mask/mask_data/quadrilateral_2'
 
 CSV_COLUMNS = [
     'filename',
     'top_left_height', 'top_left_width',
     'top_right_height', 'top_right_width',
     'bottom_left_height', 'bottom_left_width',
-    'bottom_right_height', 'bottom_right_width'
+    'bottom_right_height', 'bottom_right_width',
 ]
 
 
@@ -49,7 +49,7 @@ def main(dataset_split):
         bottom_right_width = ast.literal_eval(
             str(csv.iloc[i]['bottom_right_width']))
 
-        coordinates = [top_left_height, top_left_width, 
+        coordinates = [top_left_height, top_left_width,
                        top_right_height, top_right_width,
                        bottom_left_height, bottom_left_width,
                        bottom_right_height, bottom_right_width]
@@ -59,6 +59,18 @@ def main(dataset_split):
             height_list = list(zip(top_left_height, top_right_height))
             width_list = list(zip(top_left_width, bottom_left_width))
             threshold = 20
+
+            """
+            if min(height_list[0]) > min(height_list[1]):
+                coordinates = [x[::-1] for x in coordinates]
+            
+            height_list = list(zip(coordinates[0], coordinates[2]))
+            width_list = list(zip(coordinates[1], coordinates[5]))
+            if (abs(min(height_list[0]) - min(height_list[1])) < threshold
+                    and min(width_list[0]) > min(width_list[1])):
+                coordinates = [x[::-1] for x in coordinates]
+            """
+                 
             # if delta height less than threshold, set the order of 
             # quadrilaterals according to width
             if abs(min(height_list[0]) - min(height_list[1])) < threshold:
@@ -78,9 +90,10 @@ def main(dataset_split):
 
 
 if __name__ == '__main__':
-    dataset = ['train', 'test', 'val']
     if not os.path.exists(SAVE_PATH):
         os.makedirs(SAVE_PATH)
+
+    dataset = ['train', 'test', 'val']
     for dataset_split in dataset:
         main(dataset_split)
         print('Finish processing ' + dataset_split)
