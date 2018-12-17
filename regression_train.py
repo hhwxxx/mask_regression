@@ -105,7 +105,6 @@ def train(model_variant, tfrecord_dir, dataset_split):
         def init_fn(scaffold, sess):
             restorer.restore(sess, FLAGS.restore_ckpt_path)
 
-
         class _LoggerHook(tf.train.SessionRunHook):
             def begin(self):
                 # Assuming model_checkpoint_path looks something like:                                                                                                                             
@@ -138,7 +137,6 @@ def train(model_variant, tfrecord_dir, dataset_split):
                                   '(%.1f examples/sec; %.3f sec/batch)')
                     print(format_str % (datetime.now(), self._step, loss_value, 
                                         examples_per_sec, sec_per_batch))
-
 
         training_steps = steps_per_epoch * FLAGS.num_epochs
 

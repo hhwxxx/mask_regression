@@ -117,14 +117,14 @@ def augment(image,
         image = tf.image.resize_images(
             image, resize, align_corners=True,
             method=tf.image.ResizeMethod.BILINEAR)
-    
+
     if hue_delta:
         image = tf.image.random_hue(image, hue_delta)
-    
+
     image = flip_image(horizontal_flip, image)
     image = shift_image(image, width_shift_range, height_shift_range)
     image = normalize(image)
-    
+
     return image, coordinates
 
 

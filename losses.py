@@ -322,8 +322,8 @@ class CosineLoss(Loss):
         distance = self._euclidean_distance(x, y)
 
         epsilon = 1e-3
-        # cosine = delta_width / (distance + epsilon)
-        cosine = delta_width / distance
+        cosine = delta_width / (distance + epsilon)
+        # cosine = delta_width / distance
 
         return cosine
 

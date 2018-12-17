@@ -2,15 +2,15 @@
 set -e
 
 export CUDA_VISIBLE_DEVICES=0
-export PYTHONPATH=$PYTHONPATH:/root/mask:/root/mask/slim
+export PYTHONPATH=$PYTHONPATH:/home/hhw/work/hikvision:/home/hhw/work/hikvision/slim
 
 CURRENT_DIR=$(pwd)
 
 TFRECORD_DIR="$CURRENT_DIR/tfrecords/quadrilateral_multiple"
 DATASET_SPLIT="train"
-MODEL_VARIANT="resnet_v1_50_beta"
+MODEL_VARIANT="resnet_v1_50_beta_lstm"
 RESTORE_CKPT_PATH="$CURRENT_DIR/init_models/resnet_v1_50/model.ckpt"
-TRAIN_DIR="$CURRENT_DIR/exp/quadrilateral_multiple_resnet_v1_50_beta_01/train"
+TRAIN_DIR="$CURRENT_DIR/exp/quadrilateral_multiple_resnet_50_lstm_00/train"
 NUM_EPOCHS=250
 DECAY_EPOCHS=120
 

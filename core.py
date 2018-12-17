@@ -53,15 +53,15 @@ def loss(predictions, labels, weights):
     """
     # point mean squared error
     point_mse = losses.PointMSE(weights)(
-        predictions, labels, ignore_zero_targets=True, scope='PointMSE')
+        predictions, labels, ignore_zero_targets=False, scope='PointMSE')
 
     # distance loss
     distance_loss = losses.DistanceLoss(weights)(
-        predictions, labels, ignore_zero_targets=True, scope='DistanceLoss')
+        predictions, labels, ignore_zero_targets=False, scope='DistanceLoss')
 
     # cosine_loss
     cosine_loss = losses.CosineLoss(weights)(
-        predictions, labels, ignore_zero_targets=True, scope='CosineLoss')
+        predictions, labels, ignore_zero_targets=False, scope='CosineLoss')
 
     # regularization loss
     regularization_loss = tf.losses.get_regularization_loss()

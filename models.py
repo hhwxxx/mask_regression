@@ -78,7 +78,6 @@ def vgg_16(images, is_training):
     Input images size should be [batch_size, 224, 224, 3] in order to 
     initialize from ImageNet pretrained model.
     """
-
     batch_norm_params = {
         'is_training': is_training,
         'decay': BATCH_NORM_DECAY,
@@ -112,7 +111,7 @@ def vgg_16(images, is_training):
 
             predictions = slim.conv2d(net, NUMBER_OUTPUT, [1, 1], activation_fn=None, 
                                       normalizer_fn=None, scope='predictions')
-    
+
     return predictions
 
 
@@ -129,7 +128,7 @@ def resnet_v2_50(images, is_training):
             global_pool=True, 
             spatial_squeeze=True, 
             scope='resnet_v2_50')
-    
+
     return net
 
 
@@ -144,7 +143,7 @@ def resnet_v1_50_beta(images, is_training):
             num_classes=NUMBER_OUTPUT,
             is_training=(is_training and fine_tune_batch_norm),
             global_pool=True)
-    
+
     return feature
 
 
@@ -159,7 +158,7 @@ def resnet_v1_101_beta(images, is_training):
             num_classes=NUMBER_OUTPUT,
             is_training=(is_training and fine_tune_batch_norm),
             global_pool=True)
-    
+
     return feature
 
 
@@ -177,7 +176,7 @@ def resnet_v1_50_beta_lstm(images, is_training):
 
     with tf.variable_scope('lstm'):
         # feature has shape (batch_size, feature_size)
-        feature = tf.squeeze(feature)
+        feature = tf.squeeze(feature, axis=(1, 2))
         # feature has shape (1, batch_size, feature_size)
         feature = tf.expand_dims(feature, axis=0)
         # feature has shape (time_step, batch_size, feature_size)
@@ -188,7 +187,7 @@ def resnet_v1_50_beta_lstm(images, is_training):
         lstm_output, state = lstm(feature)
         # each element in lstm_output_list has shape (batch_size, 128)
         lstm_output_list = tf.unstack(lstm_output, axis=0)
-    
+
     output_list = []
     with tf.variable_scope('logits'):
         with slim.arg_scope([slim.fully_connected],
