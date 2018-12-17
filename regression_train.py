@@ -6,7 +6,6 @@ import os
 import time
 from datetime import datetime
 import sys
-sys.path.extend(['/home/hhw/work/hikvision', '/home/hhw/work/hikvision/slim'])
 
 import tensorflow as tf
 import numpy as np
@@ -101,9 +100,12 @@ def train(model_variant, tfrecord_dir, dataset_split):
         # variables_to_restore = {name_in_checkpoint(var):var
         #     for var in variables_to_restore}
 
-        restorer = tf.train.Saver(variables_to_restore)
-        def init_fn(scaffold, sess):
-            restorer.restore(sess, FLAGS.restore_ckpt_path)
+        if FLAGS.restore_ckpt_path:
+            restorer = tf.train.Saver(variables_to_restore)
+            def init_fn(scaffold, sess):
+                restorer.restore(sess, FLAGS.restore_ckpt_path)
+        else:
+            init_fn = None
 
         class _LoggerHook(tf.train.SessionRunHook):
             def begin(self):

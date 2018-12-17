@@ -23,6 +23,7 @@ exclude_list_resnet_v2_50 = ['resnet_v2_50/logits']
 exclude_list_resnet_v1_50_beta = ['resnet_v1_50/logits']
 exclude_list_resnet_v1_101_beta = ['resnet_v1_101/logits']
 exclude_list_resnet_v1_50_beta_lstm = ['lstm', 'logits']
+exclude_list_input_pipeline_test_model = []
 
 EXCLUDE_LIST_MAP = {
     'custom': exclude_list_custom,
@@ -31,6 +32,7 @@ EXCLUDE_LIST_MAP = {
     'resnet_v1_50_beta': exclude_list_resnet_v1_50_beta,
     'resnet_v1_101_beta': exclude_list_resnet_v1_101_beta,
     'resnet_v1_50_beta_lstm': exclude_list_resnet_v1_50_beta_lstm,
+    'input_pipeline_test_model': exclude_list_input_pipeline_test_model,
 }
 
 
@@ -202,3 +204,14 @@ def resnet_v1_50_beta_lstm(images, is_training):
             output = tf.concat(output_list, axis=1)
 
     return output
+
+
+def input_pipeline_test_model(images, is_training):
+    batch_size = tf.shape(images)[0]
+    feature = tf.reshape(images, [batch_size, -1])
+    feature = tf.slice(feature, [0, 0], [-1, 16])
+    feature = slim.fully_connected(feature, NUMBER_OUTPUT,
+                                   activation_fn=None,
+                                   normalizer_fn=None)
+
+    return feature

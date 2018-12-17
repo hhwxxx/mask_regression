@@ -6,7 +6,6 @@ import os
 import sys
 import shutil
 import sys
-sys.path.extend(['/home/hhw/work/hikvision', '/home/hhw/work/hikvision/slim'])
 
 import tensorflow as tf
 import numpy as np

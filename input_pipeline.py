@@ -67,6 +67,7 @@ def decode(serialized_example):
 
     return image, coordinates
 
+
 def shift_image(image, width_shift_range, height_shift_range):
     """This fn will perform the horizontal or vertical shift"""
     if width_shift_range or height_shift_range:
@@ -156,21 +157,20 @@ def inputs(tfrecord_dir, dataset_split, is_training,
     with tf.name_scope('input'):
         dataset = tf.data.TFRecordDataset(filename)
 
-        dataset = dataset.map(decode)
+        dataset = dataset.map(decode, num_parallel_calls=16)
 
         if is_training:
-            dataset = dataset.map(train_preprocessing_fn)
-        else:
-            dataset = dataset.map(val_preprocessing_fn)
-
-        min_queue_examples = int(NUMBER_VAL_DATA * 0.1)
-        if is_training:
+            dataset = dataset.map(train_preprocessing_fn, num_parallel_calls=16)
             min_queue_examples = int(NUMBER_TRAIN_DATA * 0.2)
-            dataset = dataset.shuffle(
-                buffer_size=min_queue_examples + 3 * batch_size)
+        else:
+            dataset = dataset.map(val_preprocessing_fn, num_parallel_calls=16)
+            min_queue_examples = int(NUMBER_VAL_DATA * 0.1)
+        
+        dataset = dataset.cache() 
+        dataset = dataset.shuffle(min_queue_examples)
         dataset = dataset.repeat(num_epochs)
         dataset = dataset.batch(batch_size)
-        dataset = dataset.prefetch(buffer_size=min_queue_examples)
+        dataset = dataset.prefetch(buffer_size=64)
     
     iterator = dataset.make_one_shot_iterator()
 
